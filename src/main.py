@@ -19,7 +19,7 @@ RULESET_CURRENT_VERSION = 1
 class LangEvolveWindow(Gtk.Window):
 
     def __init__(self):
-        Gtk.Window.__init__(self, title = "LangEvolve v{0}".format(__version__))
+        Gtk.Window.__init__(self, title = f"LangEvolve v{__version__}")
         
         self.set_size_request(800, 600)
         self.set_border_width(12)
@@ -139,10 +139,10 @@ class LangEvolveWindow(Gtk.Window):
             pass
         elif response == Gtk.ResponseType.OK:
             try:
-                with open(dialog.get_filename(), 'r') as fp:
+                with open(dialog.get_filename(), 'r', encoding='utf8') as fp:
                     self.input_words.set_text(fp.read())
             except Exception as e:
-                err = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CANCEL, "Failed to read file.")
+                err = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CANCEL, "Failed to read input lexicon file.")
                 err.format_secondary_text(str(e))
                 err.run()
                 err.destroy()
@@ -157,7 +157,7 @@ class LangEvolveWindow(Gtk.Window):
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
             try:
-                with open(dialog.get_filename(), 'r') as fp:
+                with open(dialog.get_filename(), 'r', encoding='utf8') as fp:
                     data = json.load(fp)
                     
                     version_ok = True
@@ -177,7 +177,7 @@ class LangEvolveWindow(Gtk.Window):
                             categories = data['categories']
                             for key in categories:
                                 value = categories[key]
-                                res += "{0}={1}\n".format(key, value)
+                                res += f"{key}={value}\n"
                         
                         self.categories.set_text(res)
                         
@@ -188,12 +188,12 @@ class LangEvolveWindow(Gtk.Window):
                                 key = list(rule.keys())[0]
                                 value = rule[key]
                                 
-                                res += "{0}>{1}\n".format(key, value)
+                                res += f"{key}>{value}\n"
                         
                         self.rules.set_text(res)
                     
             except Exception as e:
-                err = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CANCEL, "Failed to read file.")
+                err = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CANCEL, "Failed to read rules file.")
                 err.format_secondary_text(str(e))
                 err.run()
                 err.destroy()
@@ -206,7 +206,7 @@ class LangEvolveWindow(Gtk.Window):
             
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
-                with open(dialog.get_filename(), 'w') as fp:
+                with open(dialog.get_filename(), 'w', encoding='utf8') as fp:
                     inputs = self.input_words.get_text(self.input_words.get_start_iter(), self.input_words.get_end_iter(), True).split('\n')
                     for line in inputs:
                         line = line.strip()
@@ -226,7 +226,7 @@ class LangEvolveWindow(Gtk.Window):
     
     def on_rules_export(self, widget):
         try:
-            dialog = Gtk.FileChooserDialog("Save input to file.", self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+            dialog = Gtk.FileChooserDialog("Save rules to file.", self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
             
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
@@ -246,7 +246,7 @@ class LangEvolveWindow(Gtk.Window):
                         continue
                     res['rules'].append({r[0] : r[1]})
                 
-                with open(dialog.get_filename(), 'w') as fp:
+                with open(dialog.get_filename(), 'w', encoding='utf8') as fp:
                     json.dump(res, fp, indent = 2, ensure_ascii = False)
             elif response == Gtk.ResponseType.CANCEL:
                 pass
@@ -260,11 +260,11 @@ class LangEvolveWindow(Gtk.Window):
     
     def on_output_export(self, widget):
         try:
-            dialog = Gtk.FileChooserDialog("Save input to file.", self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
+            dialog = Gtk.FileChooserDialog("Save output to file.", self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.OK))
             
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
-                with open(dialog.get_filename(), 'w') as fp:
+                with open(dialog.get_filename(), 'w', encoding='utf8') as fp:
                     inputs = self.output_buffer.get_text(self.output_buffer.get_start_iter(), self.output_buffer.get_end_iter(), True).split('\n')
                     for line in inputs:
                         line = line.strip()
@@ -297,7 +297,7 @@ class LangEvolveWindow(Gtk.Window):
                 splits = cat.split('=')
                 
                 if len(splits) != 2:
-                    raise Exception("Failed to parse category '{0}'.".format(cat))
+                    raise Exception(f"Failed to parse category '{cat}'.")
                 
                 inp = splits[0].strip()
                 out = splits[1].strip()
@@ -314,7 +314,7 @@ class LangEvolveWindow(Gtk.Window):
                 splits = rule.split('>')
                 
                 if len(splits) != 2:
-                    raise Exception("Failed to parse rule '{0}'.".format(rule))
+                    raise Exception(f"Failed to parse rule '{rule}'.")
                 
                 inp = splits[0].strip()
                 out = splits[1].strip()
@@ -324,22 +324,22 @@ class LangEvolveWindow(Gtk.Window):
                     o = list(re.findall("%([a-zA-Z]{1})", out))[0]
                     
                     if i not in categories:
-                        raise Exception("Failed to find category {0} needed for rule '{1}'".format(i, rule))
+                        raise Exception(f"Failed to find category {i} needed for rule '{rule}'")
                     
                     if o not in categories:
-                        raise Exception("Failed to find category {0} needed for rule '{1}'".format(o, rule))
+                        raise Exception(f"Failed to find category {o} needed for rule '{rule}'")
                     
                     in_cat = categories[i]
                     out_cat = categories[o]
                     
                     if len(in_cat) != len(out_cat):
-                        raise Exception("Failed to substitute categories into rule '{0}': unequal category size.".format(rule))
+                        raise Exception(f"Failed to substitute categories into rule '{rule}': unequal category size.")
                     
                     for x, y in zip(in_cat, out_cat):
-                        rules.append((re.sub("%{0}".format(i), x, inp), re.sub("%{0}".format(o), y, out)))
+                        rules.append((re.sub(f"%{i}", x, inp), re.sub(f"%{o}", y, out)))
                 else:
                     for cat in categories.keys():
-                        inp = re.sub('%{0}'.format(cat), '[{0}]'.format(categories[cat]), inp)
+                        inp = re.sub(f'%{cat}', f'[{categories[cat]}]', inp)
                     
                     rules.append((inp, out))
             
@@ -355,9 +355,9 @@ class LangEvolveWindow(Gtk.Window):
                     for rule, replace in rules:
                         outcome = re.sub(rule, replace, outcome)
                     
-                    res_line += '{0} '.format(outcome)
+                    res_line += f'{outcome} '
                 
-                results += '{0}\n'.format(res_line.strip())
+                results += f'{res_line.strip()}\n'
                     
                 self.progress_bar.set_fraction((i + 1) / len(lines))
                 
