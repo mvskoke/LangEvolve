@@ -337,10 +337,13 @@ class LangEvolveWindow(Gtk.Window):
                     
                     for x, y in zip(in_cat, out_cat):
                         rules.append((re.sub(f"%{i}", x, inp), re.sub(f"%{o}", y, out)))
-                else:
-                    for cat in categories.keys():
-                        inp = re.sub(f'%{cat}', f'[{categories[cat]}]', inp)
+                elif '%' in inp:
+                    for char in inp:
+                        if char.isupper():
+                            inp = inp.replace(f'%{char}', f'[{categories[char]}]')
                     
+                    rules.append((inp, out))
+                else:
                     rules.append((inp, out))
             
             self.progress_bar.set_fraction(0.0)
